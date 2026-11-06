@@ -1,11 +1,14 @@
-import { Ambulance, EmergencyReport, Hospital, EmergencyStatus } from '../types/emergency';
+import { Ambulance, EmergencyReport, Hospital, EmergencyStatus, UserProfile, AuthUser, ServiceReview } from '../types/emergency';
 import { evaluateEmergencyTriage } from './triageEngine';
 
 const STORAGE_KEYS = {
   REPORTS: 'jivan_setu_reports_v2',
   AMBULANCES: 'jivan_setu_ambulances_v2',
   HOSPITALS: 'jivan_setu_hospitals_v2',
-  ACTIVE_REPORT_ID: 'jivan_setu_active_report_id'
+  ACTIVE_REPORT_ID: 'jivan_setu_active_report_id',
+  USER_PROFILE: 'jivan_setu_user_profile_v2',
+  AUTH_USER: 'jivan_setu_auth_user_v2',
+  REVIEWS: 'jivan_setu_reviews_v2'
 };
 
 export const JIVAN_SETU_EVENT = 'jivan_setu_data_change';
@@ -147,6 +150,91 @@ const SEED_AMBULANCES: Ambulance[] = [
       address: 'Green Park Extension, New Delhi'
     },
     equipment: ['AED Philips HeartStart', 'First-Aid Trauma Dressings', 'Collapsible Stretcher', 'Basic O2 Canister']
+  }
+];
+
+export const DEFAULT_USER_PROFILE: UserProfile = {
+  id: 'USER-DEF-01',
+  fullName: 'Aarav Sharma',
+  email: 'aarav.sharma@example.com',
+  phone: '+91 98765 43210',
+  location: 'Green Park Extension, New Delhi, Delhi 110016',
+  geoLocation: {
+    lat: 28.5584,
+    lng: 77.2028,
+    address: 'Green Park Extension, New Delhi, Delhi 110016',
+    landmark: 'Near Green Park Metro'
+  },
+  bloodGroup: 'O+',
+  age: 29,
+  gender: 'Male',
+  emergencyContactName: 'Sunita Sharma',
+  emergencyContactPhone: '+91 98111 22334',
+  emergencyContactRelation: 'Mother',
+  medicalConditions: ['Mild Asthma'],
+  allergies: ['Penicillin'],
+  isOnboarded: true,
+  avatarSeed: 'aarav',
+  createdAt: '2026-01-15T09:00:00.000Z',
+  updatedAt: new Date().toISOString()
+};
+
+export const DEFAULT_AUTH_USER: AuthUser = {
+  id: 'USER-DEF-01',
+  name: 'Aarav Sharma',
+  email: 'aarav.sharma@example.com',
+  role: 'bystander',
+  profile: DEFAULT_USER_PROFILE
+};
+
+const SEED_REVIEWS: ServiceReview[] = [
+  {
+    id: 'REV-01',
+    targetType: 'hospital',
+    targetId: 'HOSP-AIIMS-01',
+    targetName: 'AIIMS Apex Trauma Centre',
+    authorName: 'Dr. Ritu Vashishta, EMT-P',
+    rating: 5,
+    tags: ['Rapid Handoff', 'Trauma Bay Ready', 'Cardiothoracic Support'],
+    comment: 'The digital pre-alert arrived 6 minutes prior to our ambulance. By the time we backed into the bay, neurosurgery and the blood bank were fully mobilized. Exemplary coordination.',
+    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    verifiedRescue: true
+  },
+  {
+    id: 'REV-02',
+    targetType: 'ambulance',
+    targetId: 'AMB-108-DEL-01',
+    targetName: 'Eagle-1 (ALS) - 108 Emergency Unit',
+    authorName: 'Sunita Sharma',
+    rating: 5,
+    tags: ['4 Min Arrival', 'Calm Paramedic', 'High-Flow Oxygen'],
+    comment: 'When my son collapsed with acute breathing difficulty, 1-tap SOS tracked our location automatically. Paramedics arrived in 4 minutes and saved his life.',
+    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    verifiedRescue: true
+  },
+  {
+    id: 'REV-03',
+    targetType: 'hospital',
+    targetId: 'HOSP-SJ-02',
+    targetName: 'Safdarjung Hospital Emergency & Super-Specialty',
+    authorName: 'Mohd. Imran, Driver',
+    rating: 4,
+    tags: ['Dedicated Bay', 'Burn Unit', 'Clean Handover'],
+    comment: 'Security and triage reception cleared the emergency lane immediately upon digital signal arrival. Very smooth patient transfer.',
+    createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    verifiedRescue: true
+  },
+  {
+    id: 'REV-04',
+    targetType: 'ambulance',
+    targetId: 'AMB-108-DEL-02',
+    targetName: 'Falcon-2 (ALS) - Connaught Place Hub',
+    authorName: 'Rohan Sharma',
+    rating: 5,
+    tags: ['ECG en Route', 'Direct Cath Lab Alert', 'Professional'],
+    comment: 'Transmitted mother’s 12-lead ECG directly to Dr. RML hospital while in transit. Cath lab was waiting for us with zero waiting room delay.',
+    createdAt: new Date(Date.now() - 9 * 86400000).toISOString(),
+    verifiedRescue: true
   }
 ];
 
@@ -321,6 +409,15 @@ export const StorageService = {
     if (!localStorage.getItem(STORAGE_KEYS.REPORTS)) {
       localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(generateSeedReports()));
     }
+    if (!localStorage.getItem(STORAGE_KEYS.USER_PROFILE)) {
+      localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(DEFAULT_USER_PROFILE));
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.AUTH_USER)) {
+      localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(DEFAULT_AUTH_USER));
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.REVIEWS)) {
+      localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(SEED_REVIEWS));
+    }
   },
 
   // Reset to sample data
@@ -329,6 +426,9 @@ export const StorageService = {
     localStorage.setItem(STORAGE_KEYS.HOSPITALS, JSON.stringify(SEED_HOSPITALS));
     localStorage.setItem(STORAGE_KEYS.AMBULANCES, JSON.stringify(SEED_AMBULANCES));
     localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(generateSeedReports()));
+    localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(DEFAULT_USER_PROFILE));
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(DEFAULT_AUTH_USER));
+    localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(SEED_REVIEWS));
     notifyChange();
   },
 
@@ -493,6 +593,72 @@ export const StorageService = {
         hospitalPreparationItems: items
       }
     );
+  },
+
+  // User Profile
+  getUserProfile(): UserProfile {
+    if (typeof window === 'undefined') return DEFAULT_USER_PROFILE;
+    this.init();
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.USER_PROFILE);
+      return data ? JSON.parse(data) : DEFAULT_USER_PROFILE;
+    } catch {
+      return DEFAULT_USER_PROFILE;
+    }
+  },
+
+  saveUserProfile(profile: UserProfile): void {
+    if (typeof window === 'undefined') return;
+    const updated = { ...profile, updatedAt: new Date().toISOString() };
+    localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(updated));
+    
+    // Also sync with AuthUser if same ID
+    const auth = this.getAuthUser();
+    if (auth && auth.id === profile.id) {
+      this.setAuthUser({ ...auth, name: profile.fullName, profile: updated });
+    }
+    notifyChange();
+  },
+
+  // Auth User
+  getAuthUser(): AuthUser | null {
+    if (typeof window === 'undefined') return DEFAULT_AUTH_USER;
+    this.init();
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+      return data ? JSON.parse(data) : DEFAULT_AUTH_USER;
+    } catch {
+      return DEFAULT_AUTH_USER;
+    }
+  },
+
+  setAuthUser(user: AuthUser | null): void {
+    if (typeof window === 'undefined') return;
+    if (user) {
+      localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+    }
+    notifyChange();
+  },
+
+  // Reviews
+  getReviews(): ServiceReview[] {
+    if (typeof window === 'undefined') return [];
+    this.init();
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.REVIEWS);
+      return data ? JSON.parse(data) : SEED_REVIEWS;
+    } catch {
+      return SEED_REVIEWS;
+    }
+  },
+
+  addReview(review: ServiceReview): void {
+    const list = this.getReviews();
+    list.unshift(review);
+    localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(list));
+    notifyChange();
   },
 
   // Legacy compatibility helpers

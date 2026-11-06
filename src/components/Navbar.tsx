@@ -6,257 +6,205 @@ import {
   Ambulance, 
   Building2, 
   ChevronDown, 
-  Compass, 
-  Globe2, 
   HeartPulse, 
   LifeBuoy, 
   Menu, 
-  Navigation,
   PhoneCall, 
   ShieldCheck, 
-  Sparkles, 
-  Stethoscope,
+  Star, 
+  User, 
   Users, 
   X 
 } from 'lucide-react';
 import { useJivanSetu } from '../context/JivanSetuContext';
-import { translations } from '../data/translations';
 import { UserRole } from '../types/emergency';
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
-  const { role, setRole, language, setLanguage } = useJivanSetu();
+  const { role, setRole, userProfile } = useJivanSetu();
   const location = useLocation();
-  const t = translations[language];
 
-  const roleLabels: Record<UserRole, { label: string; icon: any; color: string }> = {
-    bystander: { label: 'Bystander / Public', icon: Users, color: 'text-blue-500' },
-    ambulance: { label: 'Ambulance Unit (108)', icon: Ambulance, color: 'text-amber-500' },
-    hospital: { label: 'Hospital ER Doctor', icon: Building2, color: 'text-emerald-500' },
-    admin: { label: 'System Admin Dispatch', icon: ShieldCheck, color: 'text-purple-500' }
+  const roleLabels: Record<UserRole, { label: string; icon: any; color: string; route: string }> = {
+    bystander: { label: 'Citizen Dashboard', icon: Users, color: 'text-blue-500', route: '/dashboard' },
+    ambulance: { label: '108 Paramedic', icon: Ambulance, color: 'text-amber-500', route: '/ambulance' },
+    hospital: { label: 'AIIMS Trauma ER', icon: Building2, color: 'text-emerald-500', route: '/hospital' },
+    admin: { label: 'Dispatch Admin', icon: ShieldCheck, color: 'text-purple-500', route: '/ambulance' }
   };
 
-  const currentRoleConfig = roleLabels[role];
+  const currentRoleConfig = roleLabels[role] || roleLabels.bystander;
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 dark:bg-navy-950/95 backdrop-blur-md border-b border-slate-200 dark:border-navy-800 transition-colors">
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-navy-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-navy-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo & Brand Identity */}
           <Link to="/" className="flex items-center gap-3 group focus:outline-none">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emergency-600 to-red-500 flex items-center justify-center shadow-lg shadow-red-500/25 group-hover:scale-105 transition-transform duration-200">
-              <HeartPulse className="w-6 h-6 text-white stroke-[2.5]" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emergency-600 to-red-500 flex items-center justify-center shadow-md shadow-red-500/20 group-hover:scale-105 transition-transform duration-200">
+              <HeartPulse className="w-5 h-5 text-white stroke-[2.5]" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="text-xl font-extrabold tracking-tight text-navy-900 dark:text-white">
+                <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
                   JIVAN <span className="text-emergency-600">SETU</span>
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emergency-100 text-emergency-700 dark:bg-emergency-900/40 dark:text-emergency-300">
+                <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-red-100 text-emergency-700 dark:bg-red-950/60 dark:text-red-300">
                   EMS
                 </span>
               </div>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:inline">
-                Smart Emergency Response Platform
+              <span className="text-[11px] text-slate-400 font-medium hidden sm:inline -mt-0.5">
+                Emergency Response Platform
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden xl:flex items-center gap-1 text-sm font-medium text-slate-700 dark:text-slate-200">
+          <nav className="hidden lg:flex items-center gap-1 text-sm font-semibold text-slate-600 dark:text-slate-300">
             <Link
               to="/"
-              className={`px-3 py-2 rounded-lg transition-colors ${
+              className={`px-3 py-2 rounded-xl transition-colors ${
                 location.pathname === '/' 
-                  ? 'text-emergency-600 dark:text-emergency-400 font-semibold bg-red-50 dark:bg-red-950/30' 
-                  : 'hover:text-emergency-600 hover:bg-slate-100 dark:hover:bg-navy-900'
+                  ? 'text-emergency-600 font-bold bg-red-50 dark:bg-red-950/30' 
+                  : 'hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-navy-900'
               }`}
             >
-              {t.nav.home}
+              Home
             </Link>
 
             <Link
-              to="/first-aid"
-              className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 ${
-                location.pathname === '/first-aid'
-                  ? 'text-emergency-600 dark:text-emergency-400 font-semibold bg-red-50 dark:bg-red-950/30'
-                  : 'hover:text-emergency-600 hover:bg-slate-100 dark:hover:bg-navy-900'
+              to="/dashboard"
+              className={`px-3 py-2 rounded-xl transition-colors ${
+                location.pathname === '/dashboard'
+                  ? 'text-emergency-600 font-bold bg-red-50 dark:bg-red-950/30'
+                  : 'hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-navy-900'
               }`}
             >
-              <LifeBuoy className="w-4 h-4 text-emerald-500" />
-              {t.nav.firstAid}
+              Dashboard
             </Link>
 
             <Link
-              to="/patient-info"
-              className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 ${
-                location.pathname === '/patient-info'
-                  ? 'text-emergency-600 dark:text-emergency-400 font-semibold bg-red-50 dark:bg-red-950/30'
-                  : 'hover:text-emergency-600 hover:bg-slate-100 dark:hover:bg-navy-900'
+              to="/sos"
+              className={`px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
+                location.pathname === '/sos'
+                  ? 'text-emergency-600 font-bold bg-red-50 dark:bg-red-950/30'
+                  : 'hover:text-emergency-600 hover:bg-slate-50 dark:hover:bg-navy-900'
               }`}
             >
-              <Stethoscope className="w-4 h-4 text-blue-500" />
-              Patient Info
+              <span className="w-2 h-2 rounded-full bg-emergency-600 animate-pulse" />
+              <span>SOS Emergency</span>
             </Link>
 
-            <Link
-              to="/track"
-              className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 ${
-                location.pathname === '/track'
-                  ? 'text-emergency-600 dark:text-emergency-400 font-semibold bg-red-50 dark:bg-red-950/30'
-                  : 'hover:text-emergency-600 hover:bg-slate-100 dark:hover:bg-navy-900'
-              }`}
-            >
-              <Navigation className="w-4 h-4 text-amber-500" />
-              Track Ambulance
-            </Link>
-
-            <Link
-              to="/ai-assistant"
-              className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 ${
-                location.pathname === '/ai-assistant'
-                  ? 'text-emergency-600 dark:text-emergency-400 font-semibold bg-red-50 dark:bg-red-950/30'
-                  : 'hover:text-emergency-600 hover:bg-slate-100 dark:hover:bg-navy-900'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              {t.nav.aiAssistant}
-            </Link>
-
-            <Link
-              to="/routes"
-              className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 ${
-                location.pathname === '/routes'
-                  ? 'text-emergency-600 dark:text-emergency-400 font-semibold bg-red-50 dark:bg-red-950/30'
-                  : 'hover:text-emergency-600 hover:bg-slate-100 dark:hover:bg-navy-900'
-              }`}
-            >
-              <Compass className="w-4 h-4 text-blue-500" />
-              {t.nav.routeMap}
-            </Link>
-
-            <div className="h-5 w-px bg-slate-200 dark:bg-navy-800 mx-1" />
-
-            {/* Portal Links */}
             <Link
               to="/ambulance"
-              className={`px-2.5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors ${
+              className={`px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
                 location.pathname === '/ambulance'
-                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300'
-                  : 'hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-600 dark:text-slate-300'
+                  ? 'text-amber-600 font-bold bg-amber-50 dark:bg-amber-950/30'
+                  : 'hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-navy-900'
               }`}
             >
-              <Ambulance className="w-3.5 h-3.5 text-amber-600" />
-              108 EMS
+              <Ambulance className="w-4 h-4 text-amber-500" />
+              <span>108 Ambulance</span>
             </Link>
 
             <Link
               to="/hospital"
-              className={`px-2.5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors ${
+              className={`px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
                 location.pathname === '/hospital'
-                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-                  : 'hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-600 dark:text-slate-300'
+                  ? 'text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/30'
+                  : 'hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-navy-900'
               }`}
             >
-              <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-              Hospital ER
+              <Building2 className="w-4 h-4 text-emerald-500" />
+              <span>Hospital ER</span>
             </Link>
 
             <Link
-              to="/admin"
-              className={`px-2.5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1 transition-colors ${
-                location.pathname === '/admin'
-                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300'
-                  : 'hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-600 dark:text-slate-300'
+              to="/reviews"
+              className={`px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 ${
+                location.pathname === '/reviews'
+                  ? 'text-emergency-600 font-bold bg-red-50 dark:bg-red-950/30'
+                  : 'hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-navy-900'
               }`}
             >
-              <Activity className="w-3.5 h-3.5 text-purple-600" />
-              Admin
+              <Star className="w-4 h-4 text-amber-400" />
+              <span>Reviews</span>
             </Link>
           </nav>
 
-          {/* Right Action Tools: Language, Role Switcher, Emergency CTA */}
-          <div className="flex items-center gap-2.5">
+          {/* Right Action Tools: Role Switcher & Profile & SOS CTA */}
+          <div className="flex items-center gap-3">
             
-            {/* Language Switcher */}
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-navy-700 text-xs font-semibold flex items-center gap-1 hover:bg-slate-100 dark:hover:bg-navy-900 transition-colors text-slate-700 dark:text-slate-200"
-              title="Toggle Hindi / English"
-            >
-              <Globe2 className="w-3.5 h-3.5 text-blue-500" />
-              <span>{language === 'en' ? 'हिंदी' : 'English'}</span>
-            </button>
-
-            {/* Role Demo Quick-Switcher */}
+            {/* Role Demo Switcher Dropdown */}
             <div className="relative hidden md:block">
               <button
                 onClick={() => setRoleMenuOpen(!roleMenuOpen)}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-900 text-xs font-semibold flex items-center gap-1.5 hover:border-slate-300 dark:hover:border-navy-600 transition-all text-slate-800 dark:text-slate-200"
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-900 text-xs font-bold flex items-center gap-2 hover:border-slate-300 transition-all text-slate-700 dark:text-slate-200"
               >
                 <currentRoleConfig.icon className={`w-3.5 h-3.5 ${currentRoleConfig.color}`} />
-                <span className="max-w-[130px] truncate">{currentRoleConfig.label}</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
+                <span className="max-w-[120px] truncate">{currentRoleConfig.label}</span>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
 
               {roleMenuOpen && (
                 <div 
-                  className="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-navy-900 shadow-xl border border-slate-200 dark:border-navy-700 py-1.5 z-50 animate-in fade-in slide-in-from-top-2"
+                  className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-navy-900 shadow-2xl border border-slate-200 dark:border-navy-700 py-2 z-50 animate-fadeIn"
                   onMouseLeave={() => setRoleMenuOpen(false)}
                 >
-                  <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+                  <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Switch Active Persona (Demo)
                   </div>
                   {(Object.keys(roleLabels) as UserRole[]).map((r) => {
                     const item = roleLabels[r];
                     const Icon = item.icon;
                     return (
-                      <button
+                      <Link
                         key={r}
+                        to={item.route}
                         onClick={() => {
                           setRole(r);
                           setRoleMenuOpen(false);
                         }}
                         className={`w-full text-left px-3 py-2 text-xs flex items-center gap-2.5 transition-colors ${
                           role === r
-                            ? 'bg-emergency-50 dark:bg-emergency-950/40 text-emergency-700 dark:text-emergency-300 font-bold'
-                            : 'hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-200'
+                            ? 'bg-red-50 dark:bg-red-950/40 text-emergency-600 font-bold'
+                            : 'hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-200'
                         }`}
                       >
                         <Icon className={`w-4 h-4 ${item.color}`} />
                         <span>{item.label}</span>
-                      </button>
+                      </Link>
                     );
                   })}
                 </div>
               )}
             </div>
 
-            {/* 9-Step Faculty Demo Walkthrough */}
+            {/* Profile Avatar / Link */}
             <Link
-              to="/demo"
-              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs font-bold hover:bg-amber-100 transition shadow-sm"
-              title="Launch Guided Evaluation Flow for B.Tech Faculty"
+              to="/profile"
+              className="p-2 rounded-xl border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-900 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2"
+              title="My Emergency Profile"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>Demo Wizard</span>
+              <User className="w-4 h-4 text-slate-500" />
+              <span className="text-xs font-bold hidden sm:inline">
+                {userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Profile'}
+              </span>
             </Link>
 
-            {/* Primary Report CTA */}
+            {/* Primary SOS CTA Button */}
             <Link
-              to="/report"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emergency-600 hover:bg-emergency-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-red-500/25 hover:shadow-red-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+              to="/sos"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emergency-600 hover:bg-emergency-700 text-white font-black text-xs sm:text-sm tracking-wider shadow-md shadow-red-500/25 hover:shadow-red-500/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
             >
               <AlertOctagon className="w-4 h-4 stroke-[2.5] animate-pulse" />
-              <span className="tracking-wide uppercase">Report Emergency</span>
+              <span>SOS DISPATCH</span>
             </Link>
 
-            {/* Mobile menu button */}
+            {/* Mobile menu hamburger button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="xl:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-900"
+              className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-900"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -267,93 +215,65 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="xl:hidden border-t border-slate-200 dark:border-navy-800 bg-white dark:bg-navy-950 px-4 pt-3 pb-6 space-y-3">
-          <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-200 dark:border-navy-800">
-            <Link
-              to="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-800 dark:text-slate-200"
-            >
-              {t.nav.home}
-            </Link>
-            <Link
-              to="/first-aid"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-800 dark:text-slate-200 flex items-center gap-1.5"
-            >
-              <LifeBuoy className="w-4 h-4 text-emerald-500" />
-              {t.nav.firstAid}
-            </Link>
-            <Link
-              to="/patient-info"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-800 dark:text-slate-200 flex items-center gap-1.5"
-            >
-              <Stethoscope className="w-4 h-4 text-blue-500" />
-              Patient Info
-            </Link>
-            <Link
-              to="/track"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-800 dark:text-slate-200 flex items-center gap-1.5"
-            >
-              <Navigation className="w-4 h-4 text-amber-500" />
-              Track Ambulance
-            </Link>
-            <Link
-              to="/ai-assistant"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-800 dark:text-slate-200 flex items-center gap-1.5"
-            >
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              {t.nav.aiAssistant}
-            </Link>
-            <Link
-              to="/routes"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-navy-900 text-slate-800 dark:text-slate-200 flex items-center gap-1.5"
-            >
-              <Compass className="w-4 h-4 text-blue-500" />
-              {t.nav.routeMap}
-            </Link>
-          </div>
+        <div className="lg:hidden border-t border-slate-200 dark:border-navy-800 bg-white dark:bg-navy-950 px-4 pt-3 pb-6 space-y-2 animate-fadeIn">
+          <Link
+            to="/"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+          >
+            Home
+          </Link>
+          <Link
+            to="/dashboard"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+          >
+            User Dashboard
+          </Link>
+          <Link
+            to="/sos"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-xl text-sm font-bold text-emergency-600 bg-red-50 dark:bg-red-950/30"
+          >
+            SOS Emergency Launch
+          </Link>
+          <Link
+            to="/ambulance"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-xl text-sm font-semibold text-amber-700 hover:bg-amber-50"
+          >
+            108 Ambulance Console
+          </Link>
+          <Link
+            to="/hospital"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-xl text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+          >
+            Hospital Trauma ER
+          </Link>
+          <Link
+            to="/reviews"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+          >
+            Service Reviews
+          </Link>
+          <Link
+            to="/profile"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+          >
+            My Emergency Profile
+          </Link>
 
-          <div className="space-y-1">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">
-              Role Dashboards
-            </div>
-            <Link
-              to="/ambulance"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-amber-700 dark:text-amber-300"
+          <div className="pt-3 border-t border-slate-200 dark:border-navy-800">
+            <a
+              href="tel:112"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-900 text-white font-bold text-xs"
             >
-              <Ambulance className="w-4 h-4" />
-              Ambulance Dispatch Portal
-            </Link>
-            <Link
-              to="/hospital"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
-            >
-              <Building2 className="w-4 h-4" />
-              Hospital Trauma ER Portal
-            </Link>
-            <Link
-              to="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-700 dark:text-purple-300"
-            >
-              <Activity className="w-4 h-4" />
-              Command Center Admin
-            </Link>
-            <Link
-              to="/demo"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 bg-amber-500 text-white rounded-lg shadow"
-            >
-              <Sparkles className="w-4 h-4" />
-              Guided College Demo Wizard
-            </Link>
+              <PhoneCall className="w-4 h-4 text-emergency-500" />
+              <span>Official 112 Emergency Fallback</span>
+            </a>
           </div>
         </div>
       )}

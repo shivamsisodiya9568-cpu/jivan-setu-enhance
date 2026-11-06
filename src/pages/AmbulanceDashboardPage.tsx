@@ -111,6 +111,21 @@ export const AmbulanceDashboardPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Prototype Disclaimer Banner */}
+        <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="font-bold uppercase tracking-wider text-[10px] px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200">
+              Simulated Services
+            </span>
+            <span>
+              Demo 108 ALS Ambulance Console. Operates in simulation mode for prototype testing. For real-life emergencies, call 112.
+            </span>
+          </div>
+          <span className="text-[11px] font-semibold text-slate-500 hidden sm:inline">
+            Official Emergency Fallback: Dial 112
+          </span>
+        </div>
+
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 rounded-xl bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-800">

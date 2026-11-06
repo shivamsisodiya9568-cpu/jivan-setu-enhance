@@ -6,9 +6,12 @@ import {
   EmergencyType,
   Hospital, 
   LanguageCode, 
-  UserRole 
+  UserRole,
+  UserProfile,
+  AuthUser,
+  ServiceReview
 } from '../types/emergency';
-import { JIVAN_SETU_EVENT, StorageService } from '../services/storageService';
+import { JIVAN_SETU_EVENT, StorageService, DEFAULT_USER_PROFILE, DEFAULT_AUTH_USER } from '../services/storageService';
 import { evaluateEmergencyTriage, TriageInput } from '../services/triageEngine';
 
 interface NotificationToast {
@@ -26,9 +29,16 @@ interface JivanSetuContextType {
   ambulances: Ambulance[];
   hospitals: Hospital[];
   toasts: NotificationToast[];
+  userProfile: UserProfile;
+  authUser: AuthUser | null;
+  reviews: ServiceReview[];
   setRole: (role: UserRole) => void;
   setLanguage: (lang: LanguageCode) => void;
   setActiveReportId: (id: string) => void;
+  updateProfile: (profile: Partial<UserProfile>) => void;
+  login: (email: string, role?: UserRole) => void;
+  logout: () => void;
+  submitReview: (review: Omit<ServiceReview, 'id' | 'createdAt'>) => void;
   submitReport: (input: TriageInput & {
     reporterName?: string;
     reporterPhone?: string;
@@ -39,6 +49,11 @@ interface JivanSetuContextType {
     location: { lat: number; lng: number; address: string; landmark?: string };
     emergencyType?: EmergencyType;
     callerPhone?: string;
+    conditionSummary?: string;
+  }) => EmergencyReport;
+  triggerProfileSos: (params?: {
+    emergencyType?: EmergencyType;
+    customLocation?: { lat: number; lng: number; address: string; landmark?: string };
     conditionSummary?: string;
   }) => EmergencyReport;
   updatePatientInfo: (id: string, updates: Partial<EmergencyReport>) => EmergencyReport | undefined;
@@ -65,6 +80,9 @@ export const JivanSetuProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [activeReportId, setActiveReportIdState] = useState<string | null>(null);
   const [toasts, setToasts] = useState<NotificationToast[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(DEFAULT_AUTH_USER);
+  const [reviews, setReviews] = useState<ServiceReview[]>([]);
 
   // Reload data from StorageService
   const refreshData = () => {
@@ -72,10 +90,21 @@ export const JivanSetuProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const a = StorageService.getAmbulances();
     const h = StorageService.getHospitals();
     const activeId = StorageService.getActiveReportId();
+    const p = StorageService.getUserProfile();
+    const u = StorageService.getAuthUser();
+    const revs = StorageService.getReviews();
 
     setReports(r);
     setAmbulances(a);
     setHospitals(h);
+    setUserProfile(p);
+    setAuthUser(u);
+    setReviews(revs);
+
+    if (u && u.role && u.role !== role) {
+      setRoleState(u.role);
+    }
+
     if (activeId) {
       setActiveReportIdState(activeId);
     } else if (r.length > 0) {
@@ -112,6 +141,9 @@ export const JivanSetuProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const setRole = (newRole: UserRole) => {
     setRoleState(newRole);
+    if (authUser) {
+      StorageService.setAuthUser({ ...authUser, role: newRole });
+    }
     addToast('info', 'Active Portal Switched', `Switched to ${newRole.toUpperCase()} view.`);
   };
 
@@ -122,6 +154,52 @@ export const JivanSetuProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const setActiveReportId = (id: string) => {
     StorageService.setActiveReportId(id);
     setActiveReportIdState(id);
+  };
+
+  const updateProfile = (updates: Partial<UserProfile>) => {
+    const current = StorageService.getUserProfile();
+    const updated: UserProfile = {
+      ...current,
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    StorageService.saveUserProfile(updated);
+    refreshData();
+    addToast('success', 'Profile Updated', 'Saved emergency profile synchronized.');
+  };
+
+  const login = (email: string, preferredRole?: UserRole) => {
+    const prof = StorageService.getUserProfile();
+    const userRole = preferredRole || 'bystander';
+    const user: AuthUser = {
+      id: prof.id || 'USER-DEF-01',
+      name: prof.fullName || 'Citizen User',
+      email,
+      role: userRole,
+      profile: prof
+    };
+    StorageService.setAuthUser(user);
+    setRoleState(userRole);
+    refreshData();
+    addToast('success', 'Signed In', `Welcome back, ${user.name}!`);
+  };
+
+  const logout = () => {
+    StorageService.setAuthUser(null);
+    setRoleState('bystander');
+    refreshData();
+    addToast('info', 'Signed Out', 'You have been logged out.');
+  };
+
+  const submitReview = (newRev: Omit<ServiceReview, 'id' | 'createdAt'>) => {
+    const review: ServiceReview = {
+      ...newRev,
+      id: `REV-${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    StorageService.addReview(review);
+    refreshData();
+    addToast('success', 'Review Submitted', 'Thank you! Your feedback helps emergency responders.');
   };
 
   const submitReport = (input: TriageInput & {
@@ -170,7 +248,7 @@ export const JivanSetuProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         {
           status: 'Received',
           timestamp: new Date().toISOString(),
-          actor: `${safeReporterName} (Public User)`,
+          actor: `${safeReporterName} (Jivan Setu User)`,
           note: `Incident registered with priority ${triage.priority}. Emergency ID generated.`
         }
       ],
@@ -180,8 +258,8 @@ export const JivanSetuProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       hospitalPreAlertAcknowledged: false,
       recommendedEquipment: triage.recommendedEquipment,
       sbarSummary: triage.sbarSummary,
-      etaMinutes: triage.priority === 'RED' ? 5 : 10,
-      distanceKm: 2.2
+      etaMinutes: triage.priority === 'RED' ? 5 : 8,
+      distanceKm: 2.1
     };
 
     StorageService.saveReport(newReport);
@@ -213,6 +291,49 @@ export const JivanSetuProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       suspectedInjuries: [],
       victimCount: 1,
       additionalNotes: params.conditionSummary || 'Immediate 1-Tap SOS ambulance booking triggered from Home Screen.'
+    });
+  };
+
+  // Automated 1-Tap SOS using saved UserProfile
+  const triggerProfileSos = (params?: {
+    emergencyType?: EmergencyType;
+    customLocation?: { lat: number; lng: number; address: string; landmark?: string };
+    conditionSummary?: string;
+  }): EmergencyReport => {
+    const prof = StorageService.getUserProfile();
+    const fallbackLocation = {
+      lat: 28.5630,
+      lng: 77.2085,
+      address: prof.location || 'Green Park Extension, New Delhi, Delhi 110016',
+      landmark: 'Registered Residential Address'
+    };
+
+    const locationToUse = params?.customLocation || prof.geoLocation || fallbackLocation;
+
+    const medicalSummary = [
+      `Blood Group: ${prof.bloodGroup}`,
+      `Age: ${prof.age} (${prof.gender})`,
+      `Emergency Contact: ${prof.emergencyContactName} (${prof.emergencyContactPhone} - ${prof.emergencyContactRelation})`,
+      prof.medicalConditions?.length ? `Medical Conditions: ${prof.medicalConditions.join(', ')}` : null,
+      prof.allergies?.length ? `Known Allergies: ${prof.allergies.join(', ')}` : null
+    ].filter(Boolean).join(' | ');
+
+    const combinedNotes = `${params?.conditionSummary || '1-Tap Emergency SOS Dispatched.'}\n[SAVED PATIENT PROFILE: ${medicalSummary}]`;
+
+    return submitReport({
+      emergencyType: params?.emergencyType || 'Cardiac Arrest / Chest Pain',
+      reporterName: prof.fullName,
+      reporterPhone: prof.phone,
+      patientName: prof.fullName,
+      patientAge: prof.age,
+      patientGender: prof.gender === 'Unknown' ? 'Male' : prof.gender,
+      location: locationToUse,
+      consciousness: 'Alert & Responsive',
+      breathing: 'Gasping / Struggling',
+      severeBleeding: 'None',
+      suspectedInjuries: [],
+      victimCount: 1,
+      additionalNotes: combinedNotes
     });
   };
 
@@ -261,11 +382,19 @@ export const JivanSetuProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         ambulances,
         hospitals,
         toasts,
+        userProfile,
+        authUser,
+        reviews,
         setRole,
         setLanguage,
         setActiveReportId,
+        updateProfile,
+        login,
+        logout,
+        submitReview,
         submitReport,
         submitQuickSos,
+        triggerProfileSos,
         updatePatientInfo,
         updateStatus,
         acknowledgeHospitalPreAlert,

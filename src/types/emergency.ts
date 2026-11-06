@@ -163,3 +163,48 @@ export interface Hospital {
   specialties: string[];
   distanceKmFromCenter?: number;
 }
+
+export type BloodGroup = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'Unknown';
+export type Gender = 'Male' | 'Female' | 'Other' | 'Unknown';
+
+export interface UserProfile {
+  id: string;
+  fullName: string;
+  email?: string;
+  phone: string;
+  location: string;
+  geoLocation?: GeoLocation;
+  bloodGroup: BloodGroup;
+  age: number;
+  gender: Gender;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactRelation: string;
+  medicalConditions: string[];
+  allergies: string[];
+  isOnboarded: boolean;
+  avatarSeed?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  profile?: UserProfile;
+}
+
+export interface ServiceReview {
+  id: string;
+  targetType: 'hospital' | 'ambulance';
+  targetId: string;
+  targetName: string;
+  authorName: string;
+  rating: number; // 1 to 5
+  tags: string[];
+  comment: string;
+  createdAt: string;
+  verifiedRescue?: boolean;
+}
